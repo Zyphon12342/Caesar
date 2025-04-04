@@ -12,6 +12,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   final List<ChatMessage> _messages = [];
   bool _isTyping = false;
   late AnimationController _typingController;
+  late ScrollController _scrollController;
+  double _lastScrollOffset = 0;
+  bool _isScrolledUp = false;
 
   @override
   void initState() {
@@ -20,12 +23,31 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat();
+    
+    _scrollController = ScrollController();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  void _handleScroll() {
+    final currentOffset = _scrollController.offset;
+    setState(() {
+      _isScrolledUp = currentOffset > _lastScrollOffset && currentOffset > 50;
+    });
+    _lastScrollOffset = currentOffset;
+  }
+
+  void _clearMessages() {
+    setState(() {
+      _messages.clear();
+      _isTyping = false;
+    });
   }
 
   @override
   void dispose() {
     _messageController.dispose();
     _typingController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -41,7 +63,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       setState(() {
         _isTyping = false;
         _messages.add(ChatMessage(
-          text: "Response with updated left-aligned loading and rounded input",
+          text: "Response message",
           isUser: false,
         ));
       });
@@ -54,21 +76,39 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text(
-          'CEASAR',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.5,
+        backgroundColor: _isScrolledUp ? const Color(0xFF1E1E1E) : Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded, color: Colors.white),
+          onPressed: () {},
+        ),
+        title: AnimatedAlign(
+          duration: const Duration(milliseconds: 500),
+          alignment: _messages.isEmpty ? const Alignment(-0.2, 0) : Alignment(-1.25, 0),
+          curve: Curves.easeInOutCubic,
+          child: Text(
+            'CEASAR',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+              fontSize: _messages.isEmpty ? 24 : 18,
+              letterSpacing: -0.5,
+            ),
           ),
         ),
-        centerTitle: true,
+        centerTitle: _messages.isEmpty,
+        actions: [
+          if (_messages.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.white),
+              onPressed: _clearMessages,
+            ),
+        ],
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.only(top: 16),
               itemCount: _messages.length + (_isTyping ? 1 : 0),
               itemBuilder: (context, index) {
@@ -85,9 +125,14 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               },
             ),
           ),
+          // Keep the existing message input container
           Container(
             decoration: BoxDecoration(
-              // color: const Color(0xFF1E1E1E),
+              color: const Color(0xFF1E1E1E),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2),
@@ -107,7 +152,6 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2D2D2D),
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: TextField(
@@ -134,7 +178,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.send_rounded, 
+                        icon: const Icon(Icons.arrow_upward_rounded, 
                             color: Color(0xFFA0A0A0)),
                         onPressed: () => _handleSubmitted(_messageController.text),
                       ),
