@@ -79,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen>
             ChatMessage(
               isUser: false,
               child: SizedBox(
-                height: 400, // Increased height to accommodate full content
+                height: 450, // Increased height to accommodate full content
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
