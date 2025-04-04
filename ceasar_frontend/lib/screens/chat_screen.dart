@@ -3,6 +3,7 @@ import '../services/chat_service.dart';
 import '../utils/response_processor.dart';
 import '../components/chat_message.dart';
 import '../utils/extensions/scroll_controller_ext.dart';
+import '../components/pulsing_circle.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -52,11 +53,13 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
         _messages.map((m) => m.toMap()).toList(),
       );
 
-      ResponseProcessor.processResponse(
-        response: response,
-        onText: _addBotMessage,
-        onCards: _addBotCards,
-      );
+      if (response != null) {
+        ResponseProcessor.processResponse(
+          response: response,
+          onText: _addBotMessage,
+          onCards: _addBotCards,
+        );
+      }
     } catch (e) {
       _addBotMessage('Error: $e');
     } finally {
@@ -116,7 +119,20 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                 if (index >= _messages.length) {
                   return const Padding(
                     padding: EdgeInsets.all(16.0),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        PulsingCircle(),
+                        SizedBox(width: 8),
+                        Text(
+                          'CEASAR is thinking...',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 return _messages[index];
@@ -165,8 +181,18 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.send, color: Colors.white),
-              onPressed: () => _handleSubmitted(_messageController.text),
+              icon: Icon(
+                _isTyping ? Icons.close : Icons.send,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                if (_isTyping) {
+                  _chatService.cancelRequest();
+                  setState(() => _isTyping = false);
+                } else {
+                  _handleSubmitted(_messageController.text);
+                }
+              },
             ),
           ),
         ],
