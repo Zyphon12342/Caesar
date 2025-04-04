@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/flight_compare.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -7,7 +8,8 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
+class _ChatScreenState extends State<ChatScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   bool _isTyping = false;
@@ -23,7 +25,6 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat();
-    
     _scrollController = ScrollController();
     _scrollController.addListener(_handleScroll);
   }
@@ -55,20 +56,47 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     if (text.trim().isEmpty) return;
     _messageController.clear();
     setState(() {
-      _messages.add(ChatMessage(text: text, isUser: true));
+      _messages.add(
+        ChatMessage(
+          child: Text(
+            text,
+            style: TextStyle(color: Colors.white.withOpacity(0.9)),
+          ),
+          isUser: true,
+        ),
+      );
       _isTyping = true;
     });
 
-    // Simulate AI response after 1 second
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _isTyping = false;
-        _messages.add(ChatMessage(
-          text: "Response message",
-          isUser: false,
-        ));
+        if (text.toLowerCase().contains('flight')) {
+          final flightCards = getFlightCompareCards(
+            staticFlightData['data'] as List<Map<String, dynamic>>,
+          );
+          _messages.add(
+            ChatMessage(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: flightCards,
+              ),
+              isUser: false,
+            ),
+          );
+        } else {
+          _messages.add(
+            ChatMessage(
+              child: Text(
+                "Here are the flight options I found:",
+                style: TextStyle(color: Colors.white.withOpacity(0.9)),
+              ),
+              isUser: false,
+            ),
+          );
+        }
       });
-      // Scroll to bottom after widget is built
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -92,7 +120,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
         ),
         title: AnimatedAlign(
           duration: const Duration(milliseconds: 500),
-          alignment: _messages.isEmpty ? const Alignment(-0.2, 0) : Alignment(-1.25, 0),
+          alignment: _messages.isEmpty
+              ? const Alignment(-0.2, 0)
+              : Alignment(-1.25, 0),
           curve: Curves.easeInOutCubic,
           child: Text(
             'CEASAR',
@@ -134,7 +164,6 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               },
             ),
           ),
-          // Keep the existing message input container
           Container(
             decoration: BoxDecoration(
               color: const Color(0xFF1E1E1E),
@@ -187,9 +216,12 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_upward_rounded, 
-                            color: Color(0xFFA0A0A0)),
-                        onPressed: () => _handleSubmitted(_messageController.text),
+                        icon: const Icon(
+                          Icons.arrow_upward_rounded,
+                          color: Color(0xFFA0A0A0),
+                        ),
+                        onPressed: () =>
+                            _handleSubmitted(_messageController.text),
                       ),
                     ),
                   ],
@@ -204,37 +236,28 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
 }
 
 class ChatMessage extends StatelessWidget {
-  final String text;
+  final Widget child;
   final bool isUser;
 
-  const ChatMessage({
-    super.key,
-    required this.text,
-    required this.isUser,
-  });
+  const ChatMessage({super.key, required this.child, required this.isUser});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               decoration: BoxDecoration(
-                color: isUser ? const Color(0xFF3A3A3A) : const Color(0xFF2D2D2D),
+                color:
+                    isUser ? const Color(0xFF3A3A3A) : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 16,
-                  height: 1.4,
-                ),
-              ),
+              child: child,
             ),
           ),
         ],
