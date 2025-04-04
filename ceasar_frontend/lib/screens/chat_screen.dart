@@ -12,12 +12,14 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   final ChatService _chatService = ChatService();
   late AnimationController _typingController;
   late ScrollController _scrollController;
+  late AnimationController _titleAnimationController;
+  late Animation<Alignment> _titleAlignment;
   bool _isTyping = false;
 
   @override
@@ -28,6 +30,19 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 1200),
     );
     _scrollController = ScrollController();
+    
+    _titleAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    _titleAlignment = Tween<Alignment>(
+      begin: Alignment(-0.2, 0),
+      end: Alignment.centerLeft,
+    ).animate(CurvedAnimation(
+      parent: _titleAnimationController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
@@ -35,6 +50,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     _messageController.dispose();
     _typingController.dispose();
     _scrollController.dispose();
+    _titleAnimationController.dispose();
     _chatService.cancelRequest();
     super.dispose();
   }
@@ -68,12 +84,21 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     }
   }
 
+  void _updateTitleAnimation() {
+    if (_messages.isEmpty && _titleAnimationController.value > 0) {
+      _titleAnimationController.reverse();
+    } else if (_messages.isNotEmpty && _titleAnimationController.value < 1) {
+      _titleAnimationController.forward();
+    }
+  }
+
   void _addUserMessage(String text) {
     setState(() {
       _messages.add(ChatMessage(
         content: text,
         isUser: true,
       ));
+      _updateTitleAnimation();
     });
   }
 
@@ -83,6 +108,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
         content: text,
         isUser: false,
       ));
+      _updateTitleAnimation();
     });
   }
 
@@ -92,6 +118,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
         contentWidget: card,
         isUser: false,
       )));
+      _updateTitleAnimation();
     });
   }
 
@@ -99,12 +126,32 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CEASAR'),
+        leading: const Icon(Icons.menu),
+        title: AnimatedBuilder(
+          animation: _titleAnimationController,
+          builder: (context, child) {
+            return Align(
+              alignment: _titleAlignment.value,
+              child: Text(
+                'CEASAR',
+                style: TextStyle(
+                  fontSize: 24 - (8 * _titleAnimationController.value),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          },
+        ),
         actions: [
           if (_messages.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete),
-              onPressed: () => setState(() => _messages.clear()),
+              onPressed: () {
+                setState(() {
+                  _messages.clear();
+                  _updateTitleAnimation();
+                });
+              },
             ),
         ],
       ),
