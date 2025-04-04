@@ -59,6 +59,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       _isTyping = true;
     });
 
+    // Simulate AI response after 1 second
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _isTyping = false;
@@ -66,6 +67,14 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           text: "Response message",
           isUser: false,
         ));
+      });
+      // Scroll to bottom after widget is built
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       });
     });
   }
@@ -76,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: _isScrolledUp ? const Color(0xFF1E1E1E) : Colors.transparent,
+        backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.menu_rounded, color: Colors.white),
           onPressed: () {},
