@@ -79,17 +79,16 @@ class _ChatScreenState extends State<ChatScreen>
             ChatMessage(
               isUser: false,
               child: SizedBox(
-                height: 450, // Increased height to accommodate full content
-                child: SingleChildScrollView(
+                height: 450,
+                child: PageView.builder(
                   scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: flightCards.map((card) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: card,
-                      );
-                    }).toList(),
-                  ),
+                  itemCount: flightCards.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: flightCards[index],
+                    );
+                  },
                 ),
               ),
             ),
