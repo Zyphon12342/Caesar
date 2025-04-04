@@ -77,21 +77,31 @@ class _ChatScreenState extends State<ChatScreen>
           );
           _messages.add(
             ChatMessage(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: flightCards,
-              ),
               isUser: false,
+              child: SizedBox(
+                height: 400, // Increased height to accommodate full content
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: flightCards.map((card) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: card,
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
             ),
           );
         } else {
           _messages.add(
             ChatMessage(
+              isUser: false,
               child: Text(
                 "Here are the flight options I found:",
                 style: TextStyle(color: Colors.white.withOpacity(0.9)),
               ),
-              isUser: false,
             ),
           );
         }
