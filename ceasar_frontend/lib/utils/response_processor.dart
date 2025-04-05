@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../components/cards/flight_compare_card.dart';
 import '../components/cards/airbnb_card.dart';
 import '../components/cards/restaurant.dart';
+import '../components/cards/bus_card.dart';
 
 class ResponseProcessor {
   static void processResponse({
@@ -31,6 +32,11 @@ class ResponseProcessor {
           final cards = RestaurantCard.createCards(data as List<dynamic>);
           onCards([RestaurantCardGrid(cards: cards)]);
           break;
+        case 'bus':
+          final cards = BusCard.createCards(data as List<dynamic>);
+          onCards([BusCardGrid(cards: cards)]);
+          break;
+
         default:
           onText(data?.toString() ?? 'Unknown response type');
       }
