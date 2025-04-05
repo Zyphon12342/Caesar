@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/cards/flight_compare_card.dart';
 import '../components/cards/airbnb_card.dart';
-import '../components/cards/bus_card.dart';
+import '../components/cards/restaurant.dart';
 
 class ResponseProcessor {
   static void processResponse({
@@ -27,9 +27,9 @@ class ResponseProcessor {
           final cards = AirbnbCard.createCards(data as List<dynamic>);
           onCards([AirbnbCardGrid(cards: cards)]);
           break;
-        case 'bus':
-          final cards = BusCard.createCards(data as List<dynamic>);
-          onCards([BusCardGrid(cards: cards)]);
+        case 'restaurant':
+          final cards = RestaurantCard.createCards(data as List<dynamic>);
+          onCards([RestaurantCardGrid(cards: cards)]);
           break;
         default:
           onText(data?.toString() ?? 'Unknown response type');
@@ -44,6 +44,28 @@ class FlightCompareCardGrid extends StatelessWidget {
   final List<FlightCompareCard> cards;
 
   const FlightCompareCardGrid({super.key, required this.cards});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 450,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: cards.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) => SizedBox(
+          width: MediaQuery.of(context).size.width * 0.85,
+          child: cards[index],
+        ),
+      ),
+    );
+  }
+}
+
+class RestaurantCardGrid extends StatelessWidget {
+  final List<RestaurantCard> cards;
+
+  const RestaurantCardGrid({super.key, required this.cards});
 
   @override
   Widget build(BuildContext context) {
