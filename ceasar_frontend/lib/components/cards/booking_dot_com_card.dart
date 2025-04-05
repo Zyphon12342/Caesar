@@ -1,5 +1,3 @@
-// lib/card/booking_card_dot_com.dart
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -62,127 +60,136 @@ class BookingCard extends StatelessWidget {
             content: const Text("Proceed to Booking.com listing?"),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text("Back")),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Back"),
+              ),
               TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text("Ok")),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Ok"),
+              ),
             ],
           ),
         );
         if (confirmed == true) _launchUrl();
       },
-      child: IntrinsicHeight(
-        child: SizedBox(
-          width: 240, // Base width but parent can override
-          child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 3,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.black, Color(0xFF23272A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: 165,
+        height: 260,
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 3,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.black, Color(0xFF23272A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Image section with fixed height
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 120, // Fixed height for image
-                      child: Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (ctx, child, progress) => progress ==
-                                null
-                            ? child
-                            : const Center(
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2)),
-                        errorBuilder: (_, __, ___) => const Center(
-                            child: Icon(Icons.image_not_supported, size: 40)),
-                      ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image section with fixed height
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 85,
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (ctx, child, progress) => progress == null
+                          ? child
+                          : const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                      errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(Icons.image_not_supported, size: 40)),
                     ),
                   ),
-
-                  const SizedBox(height: 8),
-
-                  // Title
-                  Text(
-                    title,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 10),
+                // Title (truncated if too long)
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-
-                  const SizedBox(height: 6),
-
-                  // Rating and review count
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      const SizedBox(width: 4),
-                      Text(rating,
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 14)),
-                      const Spacer(),
-                      const Icon(Icons.people, color: Colors.grey, size: 16),
-                      const SizedBox(width: 4),
-                      Text(reviewCount,
-                          style: const TextStyle(
-                              color: Colors.grey, fontSize: 14)),
-                    ],
-                  ),
-
-                  // Review comment (if available)
-                  if (reviewComment.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(Icons.comment, color: Colors.grey, size: 16),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            reviewComment,
-                            style: const TextStyle(
-                                color: Colors.grey, fontSize: 14),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                // Rating and review count
+                Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 15),
+                    const SizedBox(width: 4),
+                    Text(
+                      rating,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    Text(
+                      reviewCount,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-
-                  const SizedBox(height: 6),
-
-                  // Bottom row: info tags
-                  Wrap(
-                    spacing: 8,
+                ),
+                // Review comment (if available, with truncation)
+                if (reviewComment.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      _buildBadge(
-                        label: price,
-                        backgroundColor: Colors.blue[900]!,
+                      const Icon(Icons.comment, color: Colors.grey, size: 15),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          reviewComment,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
                 ],
-              ),
+                const SizedBox(height: 10),
+                // Price badge
+                _buildBadge(
+                  label: price,
+                  backgroundColor: Colors.blue[900]!,
+                ),
+                // Breakfast badge if included
+                if (breakfastIncluded.toLowerCase() == "true") ...[
+                  const SizedBox(height: 5),
+                  _buildBadge(
+                    label: "Breakfast included",
+                    backgroundColor: Colors.green[800]!,
+                  ),
+                ],
+              ],
             ),
-          ).animate().fade(duration: 250.ms).slideX(),
-        ),
+          ),
+        ).animate().fade(duration: 250.ms).slideX(),
       ),
     );
   }
@@ -193,9 +200,11 @@ class BookingCard extends StatelessWidget {
     required Color backgroundColor,
   }) =>
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         decoration: BoxDecoration(
-            color: backgroundColor, borderRadius: BorderRadius.circular(12)),
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -207,6 +216,7 @@ class BookingCard extends StatelessWidget {
               child: Text(
                 label,
                 style: const TextStyle(color: Colors.white, fontSize: 12),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -222,32 +232,17 @@ class BookingCardGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      // Show ~1.2 cards at once to hint at scroll
-      final cardWidth = constraints.maxWidth / 1.2;
-
-      // Use ConstrainedBox instead of SizedBox with a height
-      return SingleChildScrollView(
+    return SizedBox(
+      height: 280,
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: [
-            for (int i = 0; i < cards.length; i++) ...[
-              if (i > 0) const SizedBox(width: 12),
-              SizedBox(
-                width: cardWidth,
-                child: cards[i],
-              ),
-            ],
-          ],
+        itemCount: cards.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) => SizedBox(
+          width: MediaQuery.of(context).size.width * 0.6875,
+          child: cards[index],
         ),
-      );
-    });
+      ),
+    );
   }
-}
-
-/// Example data generator for [BookingCard] widgets.
-List<BookingCard> getBookingCards(dynamic response) {
-  final List<Map<String, dynamic>> scrapedDataList = response;
-  return scrapedDataList.map((data) => BookingCard.fromJson(data)).toList();
 }

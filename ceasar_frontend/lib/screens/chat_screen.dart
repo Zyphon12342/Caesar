@@ -2,12 +2,12 @@ import 'dart:math'; // Needed for cos() and sin()
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../services/chat_service.dart';
 import '../utils/response_processor.dart';
 import '../components/chat_message.dart';
 import '../utils/extensions/scroll_controller_ext.dart';
 import '../components/horizontal_orbit_loader.dart';
-import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -25,7 +25,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   late AnimationController _titleAnimationController;
   late Animation<Alignment> _titleAlignment;
-  late AnimationController _gradientController; // New controller for gradient animation
+  late AnimationController
+      _gradientController; // Controller for gradient animation
   final FocusNode _textFocusNode = FocusNode();
   bool _isTyping = false;
   bool _showBlur = false;
@@ -79,7 +80,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void _handleScroll() {
     if (!_scrollController.hasClients) return;
-
     final bool shouldShowBlur = _scrollController.offset < 100;
     if (shouldShowBlur != _showBlur) {
       setState(() {
@@ -147,7 +147,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addUserMessage(String text) {
     setState(() {
       _messages.add(ChatMessage(
-        content: text,
+        content: text, // Markdown formatted text
         isUser: true,
       ));
       _updateTitleAnimation();
@@ -157,7 +157,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addBotMessage(String text) {
     setState(() {
       _messages.add(ChatMessage(
-        content: text,
+        content: text, // Markdown formatted text
         isUser: false,
       ));
       _updateTitleAnimation();
@@ -267,16 +267,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ],
         ),
       ),
-      // Wrap the body with an AnimatedBuilder to rebuild the gradient background
+      // Wrap the body with an AnimatedBuilder to rebuild the gradient background.
       body: AnimatedBuilder(
         animation: _gradientController,
         builder: (context, child) {
-          // Calculate an angle based on the controller's value
+          // Calculate an angle based on the controller's value.
           final angle = _gradientController.value * 2 * pi;
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                // Use cosine and sine to create a subtle moving effect
+                // Use cosine and sine to create a subtle moving effect.
                 begin: Alignment(cos(angle), sin(angle)),
                 end: Alignment(-cos(angle), -sin(angle)),
                 colors: [
@@ -288,7 +288,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             child: child,
           );
         },
-        // The child is the main content of the screen
+        // The child is the main content of the screen.
         child: Column(
           children: [
             Expanded(
@@ -351,27 +351,42 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
-                child: TextField(
-                  focusNode: _textFocusNode,
-                  controller: _messageController,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxHeight: 120.0, // Maximum height before scrolling
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'Message CEASAR...',
-                    hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.4),
+                  child: TextField(
+                    focusNode: _textFocusNode,
+                    controller: _messageController,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 15,
-                      fontWeight: FontWeight.w300,
                     ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                    decoration: InputDecoration(
+                      hintText: 'Message CEASAR...',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withOpacity(0.4),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w300,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onSubmitted: _handleSubmitted,
+                    maxLines: null,
+                    minLines: 1,
+                    textCapitalization: TextCapitalization.sentences,
+                    keyboardType: TextInputType.multiline,
+                    scrollPhysics: const BouncingScrollPhysics(),
+                    onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                    onTap: () {
+                      if (_scrollController.hasClients) {
+                        _scrollToBottom();
+                      }
+                    },
+                    textInputAction: TextInputAction.send,
                   ),
-                  onSubmitted: _handleSubmitted,
-                  maxLines: null,
-                  textCapitalization: TextCapitalization.sentences,
                 ),
               ),
               AnimatedContainer(
