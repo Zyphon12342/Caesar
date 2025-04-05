@@ -3,9 +3,10 @@ import '../services/chat_service.dart';
 import '../utils/response_processor.dart';
 import '../components/chat_message.dart';
 import '../utils/extensions/scroll_controller_ext.dart';
-import '../components/pulsing_circle.dart';
+import '../components/horizontal_orbit_loader.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'dart:ui';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -231,21 +232,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               itemCount: _messages.length + (_isTyping ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index >= _messages.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        PulsingCircle(),
-                        SizedBox(width: 8),
-                        Text(
-                          'CEASAR is thinking...',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 16.0),
+                    child: HorizontalOrbitLoader(
+                      size: 30,
+                      color: Colors.white70,
+                      speed: 2.5,
                     ),
                   );
                 }
