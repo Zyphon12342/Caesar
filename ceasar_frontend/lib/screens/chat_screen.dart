@@ -72,7 +72,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void _handleScroll() {
     if (!_scrollController.hasClients) return;
-    
+
     final bool shouldShowBlur = _scrollController.offset < 100;
     if (shouldShowBlur != _showBlur) {
       setState(() {
@@ -283,21 +283,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 itemCount: _messages.length + (_isTyping ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index >= _messages.length) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          PulsingCircle(),
-                          SizedBox(width: 8),
-                          Text(
-                            '',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                          left: 30.0, right: 16.0, bottom: 20.0, top: 24.0),
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: const HorizontalOrbitLoader(
+                          size: 40.0,
+                          color: Colors.white,
+                          speed: 2.5,
+                        ),
                       ),
                     );
                   }
