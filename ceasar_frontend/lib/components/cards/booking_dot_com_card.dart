@@ -5,269 +5,225 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class BookingCard extends StatelessWidget {
-  final String _imageUrl;
-  final String _hotelUrl;
-  final String _title;
-  final String _rating;
-  final String _reviewCount;
-  final String _reviewComment;
-  final String _price;
-  final String _breakfastIncluded;
+  final String imageUrl;
+  final String hotelUrl;
+  final String title;
+  final String rating;
+  final String reviewCount;
+  final String reviewComment;
+  final String price;
+  final String breakfastIncluded;
 
   const BookingCard({
     super.key,
-    required String imageUrl,
-    required String hotelUrl,
-    required String title,
-    required String rating,
-    required String reviewCount,
-    required String reviewComment,
-    required String price,
-    required String breakfastIncluded,
-  })  : _imageUrl = imageUrl,
-        _hotelUrl = hotelUrl,
-        _title = title,
-        _rating = rating,
-        _reviewCount = reviewCount,
-        _reviewComment = reviewComment,
-        _price = price,
-        _breakfastIncluded = breakfastIncluded;
+    required this.imageUrl,
+    required this.hotelUrl,
+    required this.title,
+    required this.rating,
+    required this.reviewCount,
+    required this.reviewComment,
+    required this.price,
+    required this.breakfastIncluded,
+  });
 
   /// Factory constructor to create a [BookingCard] instance from JSON data.
-  factory BookingCard.fromJson(Map<String, dynamic> json) {
-    return BookingCard(
-      imageUrl: json["image_url"] ?? "",
-      hotelUrl: json["hotel url"] ?? "",
-      title: json["title"] ?? "",
-      rating: json["rating"] ?? "",
-      reviewCount: json["review count"] ?? "",
-      reviewComment: json["review comment"] ?? "",
-      price: json["price"] ?? "",
-      breakfastIncluded: json["Breakfast included"] ?? "False",
-    );
-  }
+  factory BookingCard.fromJson(Map<String, dynamic> json) => BookingCard(
+        imageUrl: json["image_url"] ?? "",
+        hotelUrl: json["hotel url"] ?? "",
+        title: json["title"] ?? "",
+        rating: json["rating"] ?? "",
+        reviewCount: json["review count"] ?? "",
+        reviewComment: json["review comment"] ?? "",
+        price: json["price"] ?? "",
+        breakfastIncluded: json["Breakfast included"] ?? "False",
+      );
 
   /// Static method to create a list of [BookingCard] widgets from a JSON list.
-  static List<BookingCard> createCards(List<dynamic> data) {
-    return data.map((item) => BookingCard.fromJson(item)).toList();
-  }
+  static List<BookingCard> createCards(List<dynamic> data) =>
+      data.map((item) => BookingCard.fromJson(item)).toList();
 
   Future<void> _launchUrl() async {
-    final Uri uri = Uri.parse(_hotelUrl);
+    final uri = Uri.parse(hotelUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      debugPrint("Could not launch $_hotelUrl");
+      debugPrint("Could not launch $hotelUrl");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        showDialog<bool>(
+      onTap: () async {
+        final confirmed = await showDialog<bool>(
           context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              title: const Text("Confirmation"),
-              content: const Text(
-                  "Do you want to proceed to the Booking.com listing?"),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text("Back"),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop(true);
-                  },
-                  child: const Text("Ok"),
-                ),
-              ],
-            );
-          },
-        ).then((confirmed) {
-          if (confirmed == true) {
-            _launchUrl();
-          }
-        });
-      },
-      child: SizedBox(
-        width: 380,
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+          builder: (_) => AlertDialog(
+            title: const Text("Confirmation"),
+            content: const Text("Proceed to Booking.com listing?"),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text("Back")),
+              TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text("Ok")),
+            ],
           ),
-          elevation: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Colors.black, Color(0xFF23272A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        );
+        if (confirmed == true) _launchUrl();
+      },
+      child: IntrinsicHeight(
+        child: SizedBox(
+          width: 240, // Base width but parent can override
+          child: Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 3,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Colors.black, Color(0xFF23272A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Image section with fixed height
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 120, // Fixed height for image
                       child: Image.network(
-                        _imageUrl,
-                        height: 200,
-                        width: double.infinity,
+                        imageUrl,
                         fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(Icons.image_not_supported, size: 50),
-                          );
-                        },
+                        loadingBuilder: (ctx, child, progress) => progress ==
+                                null
+                            ? child
+                            : const Center(
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2)),
+                        errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.image_not_supported, size: 40)),
                       ),
                     ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(20),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Title
+                  Text(
+                    title,
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // Rating and review count
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 16),
+                      const SizedBox(width: 4),
+                      Text(rating,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 14)),
+                      const Spacer(),
+                      const Icon(Icons.people, color: Colors.grey, size: 16),
+                      const SizedBox(width: 4),
+                      Text(reviewCount,
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 14)),
+                    ],
+                  ),
+
+                  // Review comment (if available)
+                  if (reviewComment.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.comment, color: Colors.grey, size: 16),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            reviewComment,
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              _rating,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
                   ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+
+                  const SizedBox(height: 6),
+
+                  // Bottom row: info tags
+                  Wrap(
+                    spacing: 8,
                     children: [
-                      Text(
-                        _title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      _buildBadge(
+                        icon: breakfastIncluded == "True"
+                            ? Icons.restaurant
+                            : Icons.no_meals,
+                        label: breakfastIncluded == "True"
+                            ? "Breakfast"
+                            : "No Breakfast",
+                        backgroundColor: breakfastIncluded == "True"
+                            ? Colors.green[900]!
+                            : Colors.red[900]!,
                       ),
-                      const SizedBox(height: 8),
-                      if (_reviewComment.isNotEmpty)
-                        Text(
-                          _reviewComment,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: _breakfastIncluded == "True"
-                                  ? Colors.green[900]
-                                  : Colors.red[900],
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _breakfastIncluded == "True"
-                                      ? Icons.restaurant
-                                      : Icons.no_meals,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  _breakfastIncluded == "True"
-                                      ? "Breakfast Included"
-                                      : "No Breakfast",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[900],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '₹$_price',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(Icons.people,
-                              size: 16, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$_reviewCount reviews',
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                      _buildBadge(
+                        label: price,
+                        backgroundColor: Colors.blue[900]!,
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ).animate().fade(duration: 300.ms).slideX(),
+          ).animate().fade(duration: 250.ms).slideX(),
+        ),
       ),
     );
   }
+
+  Widget _buildBadge({
+    IconData? icon,
+    required String label,
+    required Color backgroundColor,
+  }) =>
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        decoration: BoxDecoration(
+            color: backgroundColor, borderRadius: BorderRadius.circular(12)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: Colors.white, size: 14),
+              const SizedBox(width: 4),
+            ],
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class BookingCardGrid extends StatelessWidget {
@@ -277,18 +233,27 @@ class BookingCardGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 450,
-      child: ListView.separated(
+    return LayoutBuilder(builder: (context, constraints) {
+      // Show ~1.2 cards at once to hint at scroll
+      final cardWidth = constraints.maxWidth / 1.2;
+
+      // Use ConstrainedBox instead of SizedBox with a height
+      return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        itemCount: cards.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) => SizedBox(
-          width: MediaQuery.of(context).size.width * 1,
-          child: cards[index],
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            for (int i = 0; i < cards.length; i++) ...[
+              if (i > 0) const SizedBox(width: 12),
+              SizedBox(
+                width: cardWidth,
+                child: cards[i],
+              ),
+            ],
+          ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
