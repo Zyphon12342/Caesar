@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/cards/flight_compare_card.dart';
 import '../components/cards/airbnb_card.dart';
+import '../components/cards/bus_card.dart';
 
 class ResponseProcessor {
   static void processResponse({
@@ -23,9 +24,12 @@ class ResponseProcessor {
           onCards([FlightCompareCardGrid(cards: cards)]);
           break;
         case 'airbnb':
-          //currently testing static data
           final cards = AirbnbCard.createCards(data as List<dynamic>);
           onCards([AirbnbCardGrid(cards: cards)]);
+          break;
+        case 'bus':
+          final cards = BusCard.createCards(data as List<dynamic>);
+          onCards([BusCardGrid(cards: cards)]);
           break;
         default:
           onText(data?.toString() ?? 'Unknown response type');
