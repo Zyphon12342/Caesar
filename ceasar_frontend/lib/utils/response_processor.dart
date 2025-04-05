@@ -5,6 +5,7 @@ import '../components/cards/restaurant.dart';
 import '../components/cards/bus_card.dart';
 import '../components/cards/booking_dot_com_card.dart';
 import '../components/cards/booking_dot_com_card.dart' show BookingCardGrid;
+import '../components/cards/train_compare_card.dart';
 
 class ResponseProcessor {
   static void processResponse({
@@ -50,6 +51,10 @@ class ResponseProcessor {
         case 'booking':
           final cards = BookingCard.createCards(data as List<dynamic>);
           onCards([BookingCardGrid(cards: cards)]);
+          break;
+        case 'trainCompare':
+          final cards = TrainCompareCard.createCards(data as List<dynamic>);
+          onCards([TrainCompareCardGrid(cards: cards)]);
           break;
         default:
           onText(data?.toString() ?? 'Unknown response type');

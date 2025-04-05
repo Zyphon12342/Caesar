@@ -44,7 +44,7 @@ class RestaurantCard extends StatelessWidget {
     return data.map((item) => RestaurantCard.fromJson(item)).toList();
   }
 
-  Future<void> _launchUrl() async {
+  Future<void> _launchUrl(BuildContext context) async {
     final Uri uri = Uri.parse(restaurant_url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -55,165 +55,153 @@ class RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Only display up to 3 tags.
     final List<String> displayedTags =
         tags.length > 3 ? tags.sublist(0, 3) : tags;
 
     return GestureDetector(
-      onTap: () {
-        showDialog<bool>(
+      onTap: () async {
+        final confirmed = await showDialog<bool>(
           context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              title: const Text("Confirmation"),
-              content: const Text(
-                  "Do you want to proceed to the restaurant listing?"),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text("Back"),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: const Text("Ok"),
-                ),
-              ],
-            );
-          },
-        ).then((confirmed) {
-          if (confirmed == true) {
-            _launchUrl();
-          }
-        });
+          builder: (_) => AlertDialog(
+            title: const Text("Confirmation"),
+            content:
+                const Text("Do you want to proceed to the restaurant listing?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Back"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Ok"),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true) {
+          _launchUrl(context);
+        }
       },
       child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.75,
+        width: 165,
+        height: 260,
         child: Card(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 4,
+          elevation: 3,
           child: Container(
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Colors.black, Color(0xFF23272A)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(16)),
-                      child: Image.network(
-                        image_url,
-                        height: 220,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(Icons.image_not_supported, size: 50),
-                          );
-                        },
-                      ),
-                    ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.star,
-                                color: Colors.amber, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              rating,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                // Image section
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 85,
+                    child: Image.network(
+                      image_url,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (ctx, child, progress) => progress == null
+                          ? child
+                          : const Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
                               ),
                             ),
-                          ],
+                      errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(Icons.image_not_supported, size: 40)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Restaurant name
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                // Reviews row
+                Row(
+                  children: [
+                    const Icon(Icons.people, size: 15, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        '$number reviews',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
+                const SizedBox(height: 8),
+                // Rating row
+                Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 15),
+                    const SizedBox(width: 4),
+                    Text(
+                      rating,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Display all 3 green info tags
+                Wrap(
+                  spacing: 6.0,
+                  runSpacing: 6.0,
+                  children: displayedTags.map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.green[900],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        tag,
                         style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
                           color: Colors.white,
+                          fontSize: 12,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(Icons.people,
-                              size: 16, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$number reviews',
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: displayedTags.map((tag) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.green[900],
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              tag,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
+                    );
+                  }).toList(),
                 ),
               ],
             ),
           ),
-        ).animate().fade(duration: 300.ms).slideX(),
+        ).animate().fade(duration: 250.ms).slideX(),
       ),
     );
   }
@@ -227,13 +215,13 @@ class RestaurantCardGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 450,
+      height: 280,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: cards.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) => SizedBox(
-          width: MediaQuery.of(context).size.width * 0.85,
+          width: MediaQuery.of(context).size.width * 0.6875,
           child: cards[index],
         ),
       ),
