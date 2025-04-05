@@ -173,17 +173,6 @@ class BookingCard extends StatelessWidget {
                     spacing: 8,
                     children: [
                       _buildBadge(
-                        icon: breakfastIncluded == "True"
-                            ? Icons.restaurant
-                            : Icons.no_meals,
-                        label: breakfastIncluded == "True"
-                            ? "Breakfast"
-                            : "No Breakfast",
-                        backgroundColor: breakfastIncluded == "True"
-                            ? Colors.green[900]!
-                            : Colors.red[900]!,
-                      ),
-                      _buildBadge(
                         label: price,
                         backgroundColor: Colors.blue[900]!,
                       ),
