@@ -22,7 +22,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   late AnimationController _titleAnimationController;
   late Animation<Alignment> _titleAlignment;
+  final FocusNode _textFocusNode = FocusNode();
+
   bool _isTyping = false;
+
+  // Theme colors
+  final Color _darkestColor = Colors.black;
+  final Color _darkBlue = const Color(0xFF051525);
+  final Color _accentColor = const Color(0xFF3498FF);
+  final Color _subtleAccent = const Color(0xFF1A65A3);
+  final Color _darkAccent = const Color(0xFF0A4070);
 
   @override
   void initState() {
@@ -32,19 +41,29 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1200),
     );
     _scrollController = ScrollController();
-    
+
     _titleAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
     );
-    
+
     _titleAlignment = Tween<Alignment>(
       begin: Alignment(-0.2, 0),
       end: Alignment.centerLeft,
-    ).animate(CurvedAnimation(
-      parent: _titleAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _titleAnimationController,
+        curve: Curves.easeOutQuint,
+      ),
+    );
+
+    _textFocusNode.addListener(() {
+      if (_textFocusNode.hasFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToBottom();
+        });
+      }
+    });
   }
 
   @override
@@ -53,6 +72,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _typingController.dispose();
     _scrollController.dispose();
     _titleAnimationController.dispose();
+    _textFocusNode.dispose();
     _chatService.cancelRequest();
     super.dispose();
   }
@@ -62,8 +82,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     _messageController.clear();
     _addUserMessage(text);
-    
+
     setState(() => _isTyping = true);
+
+    // Scroll to show the user message immediately.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
 
     try {
       final response = await _chatService.sendMessage(
@@ -82,7 +107,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       _addBotMessage('Error: $e');
     } finally {
       setState(() => _isTyping = false);
-      _scrollController.scrollToBottom();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
     }
   }
 
@@ -117,11 +144,22 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void _addBotCards(List<Widget> cards) {
     setState(() {
       _messages.addAll(cards.map((card) => ChatMessage(
-        contentWidget: card,
-        isUser: false,
-      )));
+            contentWidget: card,
+            isUser: false,
+          )));
       _updateTitleAnimation();
     });
+  }
+
+  void _scrollToBottom() {
+    final bottomOffset = _scrollController.position.maxScrollExtent + 80;
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        bottomOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutQuint,
+      );
+    }
   }
 
   @override
@@ -222,56 +260,113 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildInputField() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8)],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Message CEASAR...',
-                hintStyle: const TextStyle(color: Color(0xFF6B6B6B)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: 0.5,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: TextField(
+                  focusNode: _textFocusNode,
+                  controller: _messageController,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Message CEASAR...',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.4),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                  ),
+                  onSubmitted: _handleSubmitted,
+                  maxLines: null,
+                  textCapitalization: TextCapitalization.sentences,
                 ),
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
-              onSubmitted: _handleSubmitted,
-              maxLines: null,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF3A3A3A),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: Icon(
-                _isTyping ? Icons.close : Icons.send,
-                color: Colors.white,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutQuint,
+                margin: const EdgeInsets.only(right: 4, bottom: 4),
+                decoration: BoxDecoration(
+                  color: _isTyping
+                      ? Colors.redAccent.withOpacity(0.7)
+                      : Colors.white.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: _isTyping
+                          ? Colors.redAccent.withOpacity(0.2)
+                          : _accentColor.withOpacity(0.2),
+                      blurRadius: 6,
+                      spreadRadius: 0.5,
+                    ),
+                  ],
+                ),
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      if (_isTyping) {
+                        _chatService.cancelRequest();
+                        setState(() => _isTyping = false);
+                      } else {
+                        _handleSubmitted(_messageController.text);
+                      }
+                    },
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(
+                          scale: CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.elasticOut,
+                            reverseCurve: Curves.easeInQuint,
+                          ),
+                          child: child,
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Icon(
+                          _isTyping ? Icons.close : Icons.send,
+                          color: Colors.white,
+                          size: 18,
+                          key: ValueKey<bool>(_isTyping),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              onPressed: () {
-                if (_isTyping) {
-                  _chatService.cancelRequest();
-                  setState(() => _isTyping = false);
-                } else {
-                  _handleSubmitted(_messageController.text);
-                }
-              },
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
