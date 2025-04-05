@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:flutter/services.dart';
 import '../services/chat_service.dart';
 import '../utils/response_processor.dart';
 import '../components/chat_message.dart';
@@ -23,8 +25,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late AnimationController _titleAnimationController;
   late Animation<Alignment> _titleAlignment;
   final FocusNode _textFocusNode = FocusNode();
-
   bool _isTyping = false;
+  bool _showBlur = false;
 
   // Theme colors
   final Color _darkestColor = Colors.black;
@@ -41,6 +43,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1200),
     );
     _scrollController = ScrollController();
+    _scrollController.addListener(_handleScroll);
 
     _titleAnimationController = AnimationController(
       vsync: this,
@@ -48,7 +51,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
 
     _titleAlignment = Tween<Alignment>(
-      begin: Alignment(-0.2, 0),
+      begin: Alignment(0.0, 0),
       end: Alignment.centerLeft,
     ).animate(
       CurvedAnimation(
@@ -64,6 +67,17 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         });
       }
     });
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+    
+    final bool shouldShowBlur = _scrollController.offset < 100;
+    if (shouldShowBlur != _showBlur) {
+      setState(() {
+        _showBlur = shouldShowBlur;
+      });
+    }
   }
 
   @override
@@ -168,93 +182,131 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final userEmail = authProvider.currentUser?.email ?? '';
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const Icon(Icons.menu),
-        title: AnimatedBuilder(
-          animation: _titleAnimationController,
-          builder: (context, child) {
-            return Align(
-              alignment: _titleAlignment.value,
-              child: Text(
-                'CEASAR',
-                style: TextStyle(
-                  fontSize: 24 - (8 * _titleAnimationController.value),
-                  fontWeight: FontWeight.bold,
-                ),
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: AppBar(
+          leading: const Icon(Icons.menu),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  _darkBlue.withOpacity(0.8),
+                  _darkBlue.withOpacity(0),
+                ],
+                stops: const [0.0, 1.0],
               ),
-            );
-          },
-        ),
-        actions: [
-          if (_messages.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                setState(() {
-                  _messages.clear();
-                  _updateTitleAnimation();
-                });
-              },
             ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.account_circle),
-            onSelected: (value) {
-              if (value == 'logout') {
-                authProvider.signOut();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'email',
+          ),
+          title: AnimatedBuilder(
+            animation: _titleAnimationController,
+            builder: (context, child) {
+              return Align(
+                alignment: _titleAlignment.value,
                 child: Text(
-                  userEmail,
-                  style: const TextStyle(
+                  'CEASAR',
+                  style: TextStyle(
+                    fontSize: 24 - (8 * _titleAnimationController.value),
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                enabled: false,
-              ),
-              const PopupMenuItem(
-                value: 'logout',
-                child: Text('Logout'),
-              ),
-            ],
+              );
+            },
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.only(top: 16),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index >= _messages.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        PulsingCircle(),
-                        SizedBox(width: 8),
-                        Text(
-                          'CEASAR is thinking...',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
+          actions: [
+            if (_messages.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  setState(() {
+                    _messages.clear();
+                    _updateTitleAnimation();
+                  });
+                },
+              ),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.account_circle),
+              onSelected: (value) {
+                if (value == 'logout') {
+                  authProvider.signOut();
                 }
-                return _messages[index];
               },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'email',
+                  child: Text(
+                    userEmail,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  enabled: false,
+                ),
+                const PopupMenuItem(
+                  value: 'logout',
+                  child: Text('Logout'),
+                ),
+              ],
             ),
+          ],
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              _darkBlue,
+              _darkestColor,
+            ],
+            stops: const [0.0, 1.0],
           ),
-          _buildInputField(),
-        ],
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + kToolbarHeight + 16,
+                  bottom: 16,
+                ),
+                itemCount: _messages.length + (_isTyping ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index >= _messages.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          PulsingCircle(),
+                          SizedBox(width: 8),
+                          Text(
+                            '',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return _messages[index];
+                },
+              ),
+            ),
+            _buildInputField(),
+          ],
+        ),
       ),
     );
   }
