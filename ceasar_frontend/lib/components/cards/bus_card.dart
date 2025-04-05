@@ -1,5 +1,3 @@
-// lib/card/bus_card.dart -> working properly
-
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -356,6 +354,99 @@ class BusCardGrid extends StatelessWidget {
           child: cards[index],
         ),
       ),
+    );
+  }
+}
+
+class BusListScreen extends StatefulWidget {
+  @override
+  _BusListScreenState createState() => _BusListScreenState();
+}
+
+class _BusListScreenState extends State<BusListScreen> {
+  List<Map<String, String>> _busData = []; // Your original bus data
+  String? _selectedSortAttribute;
+  bool _ascending = true;
+
+  void _sortBusCards(String attribute) {
+    setState(() {
+      _selectedSortAttribute = attribute;
+      _busData.sort((a, b) {
+        final aValue = a[attribute] ?? '';
+        final bValue = b[attribute] ?? '';
+
+        // Handle different data types
+        if (attribute == 'final_price' ||
+            attribute == 'rating' ||
+            attribute == 'seats_available') {
+          final aNum = double.tryParse(aValue) ?? 0;
+          final bNum = double.tryParse(bValue) ?? 0;
+          return _ascending ? aNum.compareTo(bNum) : bNum.compareTo(aNum);
+        } else if (attribute == 'departure_time' ||
+            attribute == 'arrival_time') {
+          return _compareTime(aValue, bValue);
+        } else if (attribute == 'duration') {
+          return _compareDuration(aValue, bValue);
+        } else {
+          return _ascending
+              ? aValue.compareTo(bValue)
+              : bValue.compareTo(aValue);
+        }
+      });
+      _ascending = !_ascending; // Toggle sort order for next time
+    });
+  }
+
+  int _compareTime(String a, String b) {
+    final aParts = a.split(':').map(int.parse).toList();
+    final bParts = b.split(':').map(int.parse).toList();
+    final aMinutes = aParts[0] * 60 + aParts[1];
+    final bMinutes = bParts[0] * 60 + bParts[1];
+    return _ascending
+        ? aMinutes.compareTo(bMinutes)
+        : bMinutes.compareTo(aMinutes);
+  }
+
+  int _compareDuration(String a, String b) {
+    final parse = (String d) => d
+        .split(' ')
+        .map((v) => int.parse(v.replaceAll(RegExp(r'[^0-9]'), '')))
+        .toList();
+    final aParts = parse(a);
+    final bParts = parse(b);
+    final aTotal = aParts[0] * 60 + (aParts.length > 1 ? aParts[1] : 0);
+    final bTotal = bParts[0] * 60 + (bParts.length > 1 ? bParts[1] : 0);
+    return _ascending ? aTotal.compareTo(bTotal) : bTotal.compareTo(aTotal);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Bus List'),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: _sortBusCards,
+            itemBuilder: (context) => [
+              'bus_name',
+              'bus_type',
+              'departure_time',
+              'arrival_time',
+              'duration',
+              'final_price',
+              'rating',
+              'seats_available',
+            ]
+                .map((attr) => PopupMenuItem(
+                      value: attr,
+                      child: Text('Sort by ${attr.replaceAll('_', ' ')}'),
+                    ))
+                .toList(),
+            icon: Icon(Icons.sort),
+          ),
+        ],
+      ),
+      body: BusCardGrid(cards: getBusCards(_busData)),
     );
   }
 }
