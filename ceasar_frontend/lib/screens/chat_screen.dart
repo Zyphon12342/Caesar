@@ -4,6 +4,8 @@ import '../utils/response_processor.dart';
 import '../components/chat_message.dart';
 import '../utils/extensions/scroll_controller_ext.dart';
 import '../components/pulsing_circle.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -124,6 +126,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final userEmail = authProvider.currentUser?.email ?? '';
+
     return Scaffold(
       appBar: AppBar(
         leading: const Icon(Icons.menu),
@@ -153,6 +158,30 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 });
               },
             ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle),
+            onSelected: (value) {
+              if (value == 'logout') {
+                authProvider.signOut();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'email',
+                child: Text(
+                  userEmail,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                enabled: false,
+              ),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Text('Logout'),
+              ),
+            ],
+          ),
         ],
       ),
       body: Column(
