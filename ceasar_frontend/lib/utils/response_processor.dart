@@ -3,6 +3,8 @@ import '../components/cards/flight_compare_card.dart';
 import '../components/cards/airbnb_card.dart';
 import '../components/cards/restaurant.dart';
 import '../components/cards/bus_card.dart';
+import '../components/cards/booking_dot_com_card.dart';
+import '../components/cards/booking_dot_com_card.dart' show BookingCardGrid;
 
 class ResponseProcessor {
   static void processResponse({
@@ -36,7 +38,10 @@ class ResponseProcessor {
           final cards = BusCard.createCards(data as List<dynamic>);
           onCards([BusCardGrid(cards: cards)]);
           break;
-
+        case 'booking':
+          final cards = BookingCard.createCards(data as List<dynamic>);
+          onCards([BookingCardGrid(cards: cards)]);
+          break;
         default:
           onText(data?.toString() ?? 'Unknown response type');
       }
