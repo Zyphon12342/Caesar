@@ -409,7 +409,7 @@ class FlightCompareCardGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 450,
+      height: 510,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: cards.length,

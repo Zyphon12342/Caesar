@@ -5,9 +5,10 @@ import '../services/chat_service.dart';
 import '../utils/response_processor.dart';
 import '../components/chat_message.dart';
 import '../utils/extensions/scroll_controller_ext.dart';
-import '../components/pulsing_circle.dart';
+import '../components/horizontal_orbit_loader.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'dart:ui';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
