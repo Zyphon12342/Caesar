@@ -2,7 +2,6 @@
 
 Ceasar is a cutting-edge AI-powered chat application designed to simplify your online interactions. It serves as your personal assistant to navigate the complexities of the internet, providing a seamless and intuitive interface to get things done efficiently.
 
-![Ceasar App](ceasar_frontend/flutter_01.png)
 
 ## Beyond Traditional Chatbots: A Truly Intelligent Assistant
 
