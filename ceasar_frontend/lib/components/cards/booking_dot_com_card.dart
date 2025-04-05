@@ -101,7 +101,11 @@ class BookingCard extends StatelessWidget {
           elevation: 4,
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              gradient: const LinearGradient(
+                colors: [Colors.black, Color(0xFF23272A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -111,7 +115,8 @@ class BookingCard extends StatelessWidget {
                 Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
                       child: Image.network(
                         _imageUrl,
                         height: 200,
@@ -119,7 +124,8 @@ class BookingCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         },
                         errorBuilder: (context, error, stackTrace) {
                           return const Center(
@@ -132,14 +138,16 @@ class BookingCard extends StatelessWidget {
                       top: 12,
                       right: 12,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.star, color: Colors.amber, size: 16),
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 16),
                             const SizedBox(width: 4),
                             Text(
                               _rating,
@@ -186,10 +194,11 @@ class BookingCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: _breakfastIncluded == "True" 
-                                  ? Colors.green[900] 
+                              color: _breakfastIncluded == "True"
+                                  ? Colors.green[900]
                                   : Colors.red[900],
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -217,7 +226,8 @@ class BookingCard extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.blue[900],
                               borderRadius: BorderRadius.circular(8),
@@ -236,7 +246,8 @@ class BookingCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.people, size: 16, color: Colors.grey),
+                          const Icon(Icons.people,
+                              size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
                             '$_reviewCount reviews',
@@ -259,12 +270,6 @@ class BookingCard extends StatelessWidget {
   }
 }
 
-/// Example data generator for [BookingCard] widgets.
-List<BookingCard> getBookingCards(dynamic response) {
-  final List<Map<String, dynamic>> scrapedDataList = response;
-  return scrapedDataList.map((data) => BookingCard.fromJson(data)).toList();
-}
-
 class BookingCardGrid extends StatelessWidget {
   final List<BookingCard> cards;
 
@@ -285,4 +290,10 @@ class BookingCardGrid extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Example data generator for [BookingCard] widgets.
+List<BookingCard> getBookingCards(dynamic response) {
+  final List<Map<String, dynamic>> scrapedDataList = response;
+  return scrapedDataList.map((data) => BookingCard.fromJson(data)).toList();
 }

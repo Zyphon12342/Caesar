@@ -125,29 +125,33 @@ class FlightCompareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.grey[850],
-          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            colors: [Colors.black, Color(0xFF23272A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row: Airline logo and name
+            // Header row: Airline logo, name and fare type.
             Row(
               children: [
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(6),
                   child: Image.network(
                     airlineLogo,
                     width: 40,
@@ -156,7 +160,7 @@ class FlightCompareCard extends StatelessWidget {
                         const Icon(Icons.airplanemode_active, size: 40),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,22 +168,33 @@ class FlightCompareCard extends StatelessWidget {
                       Text(
                         airline,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      Text(
-                        fareType,
-                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.confirmation_number,
+                              size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            fareType,
+                            style: TextStyle(
+                                color: Colors.grey[400], fontSize: 14),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // Flight departure and arrival info
+            const SizedBox(height: 20),
+            const Divider(color: Colors.white24, thickness: 1),
+            const SizedBox(height: 12),
+            // Flight departure and arrival info with icons.
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -187,17 +202,33 @@ class FlightCompareCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        departureCity,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on,
+                              size: 18, color: Colors.greenAccent),
+                          const SizedBox(width: 4),
+                          Text(
+                            departureCity,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        departureTime,
-                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time,
+                              size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            departureTime,
+                            style: TextStyle(
+                                color: Colors.grey[400], fontSize: 14),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -207,25 +238,43 @@ class FlightCompareCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        arrivalCity,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Icon(Icons.location_on,
+                              size: 18, color: Colors.redAccent),
+                          const SizedBox(width: 4),
+                          Text(
+                            arrivalCity,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        arrivalTime,
-                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Icon(Icons.access_time,
+                              size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            arrivalTime,
+                            style: TextStyle(
+                                color: Colors.grey[400], fontSize: 14),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // Flight duration and layover indicator
+            const SizedBox(height: 20),
+            // Flight duration and layover indicator with icons.
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -233,86 +282,101 @@ class FlightCompareCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.schedule, size: 16, color: Colors.grey),
                     const SizedBox(width: 4),
-                    Text(duration, style: const TextStyle(color: Colors.grey)),
+                    Text(
+                      duration,
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: layover.toLowerCase() == "direct"
                         ? Colors.green[800]
                         : Colors.orange[800],
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    layover.toLowerCase() == "direct" ? "Non-stop" : "Layover",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        layover.toLowerCase() == "direct"
+                            ? Icons.flight
+                            : Icons.airplanemode_active,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        layover.toLowerCase() == "direct"
+                            ? "Non-stop"
+                            : "Layover",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // Price block and providers list
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () => _launchUrl(url),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[900],
-                      borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 20),
+            const Divider(color: Colors.white24, thickness: 1),
+            const SizedBox(height: 12),
+            // Price block and provider options.
+            GestureDetector(
+              onTap: () => _launchUrl(url),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.blue[900],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Cheapflights",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Row(
                       children: [
-                        const Text(
-                          "Cheapflights",
-                          style: TextStyle(
-                            color: Colors.white,
+                        Text(
+                          price,
+                          style: const TextStyle(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-                        Row(
-                          children: [
-                            Text(
-                              price,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.arrow_forward,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.arrow_forward,
+                          size: 16,
+                          color: Colors.white,
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 12),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Provider options arranged using a Wrap widget.
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
                 if (provider1Name != null && provider1Price != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _buildProviderPrice(
-                      provider1Name!,
-                      provider1Price!,
-                      provider1Url ?? "",
-                    ),
+                  _buildProviderPrice(
+                    provider1Name!,
+                    provider1Price!,
+                    provider1Url ?? "",
                   ),
                 if (provider2Name != null && provider2Price != null)
                   _buildProviderPrice(
@@ -333,33 +397,28 @@ class FlightCompareCard extends StatelessWidget {
 List<FlightCompareCard> getFlightCompareCards(
   List<Map<String, dynamic>> response,
 ) {
-  return response.map((flight) {
-    return FlightCompareCard(
-      airline: flight["airline"] ?? "Unknown Airline",
-      airlineLogo: flight["airline_logo"] ?? "",
-      departureTime: flight["departure_time"] ?? "--:--",
-      departureCity: flight["departure_city"] ?? "",
-      arrivalTime: flight["arrival_time"] ?? "--:--",
-      arrivalCity: flight["arrival_city"] ?? "",
-      duration: flight["duration"] ?? "",
-      price: flight["price"] ?? "₹—",
-      fareType: flight["fare_type"] ?? "Economy",
-      layover: flight["layover"] ?? "direct",
-      url: flight["url"] ?? "",
-      provider1Name: flight["provider1_name"]?.toString(),
-      provider1Price: flight["provider1_price"]?.toString(),
-      provider1Url: flight["provider1_url"]?.toString(),
-      provider2Name: flight["provider2_name"]?.toString(),
-      provider2Price: flight["provider2_price"]?.toString(),
-      provider2Url: flight["provider2_url"]?.toString(),
-    );
-  }).toList();
+  return response.map((flight) => FlightCompareCard.fromJson(flight)).toList();
 }
 
-/// Static flight data for testing purposes.
-final Map<String, dynamic> staticFlightData = {
-  'type': 'flightCompare',
-  'data': [
-    // Flight data goes here
-  ]
-};
+/// FlightCompareCardGrid remains unchanged.
+class FlightCompareCardGrid extends StatelessWidget {
+  final List<FlightCompareCard> cards;
+
+  const FlightCompareCardGrid({super.key, required this.cards});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 450,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: cards.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) => SizedBox(
+          width: MediaQuery.of(context).size.width * 0.85,
+          child: cards[index],
+        ),
+      ),
+    );
+  }
+}

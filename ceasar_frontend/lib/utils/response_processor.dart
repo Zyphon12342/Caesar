@@ -16,10 +16,19 @@ class ResponseProcessor {
       onText(response['error']);
       return;
     }
-
+    if (response == null || response.isEmpty) {
+      onText('No response received.');
+      return;
+    }
     if (response is Map && response.containsKey('type')) {
+      debugPrint('Response type: ${response['type']}');
+      debugPrint('Response data: ${response['data']}');
       final type = response['type'].toString();
       final data = response['data'];
+      if (data == null || data.isEmpty) {
+        onText('No data received.');
+        return;
+      }
 
       switch (type) {
         case 'flightCompare':
@@ -48,49 +57,5 @@ class ResponseProcessor {
     } else {
       onText(response.toString());
     }
-  }
-}
-
-class FlightCompareCardGrid extends StatelessWidget {
-  final List<FlightCompareCard> cards;
-
-  const FlightCompareCardGrid({super.key, required this.cards});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 450,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: cards.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) => SizedBox(
-          width: MediaQuery.of(context).size.width * 0.85,
-          child: cards[index],
-        ),
-      ),
-    );
-  }
-}
-
-class RestaurantCardGrid extends StatelessWidget {
-  final List<RestaurantCard> cards;
-
-  const RestaurantCardGrid({super.key, required this.cards});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 450,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: cards.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) => SizedBox(
-          width: MediaQuery.of(context).size.width * 0.85,
-          child: cards[index],
-        ),
-      ),
-    );
   }
 }
