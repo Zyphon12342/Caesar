@@ -31,7 +31,7 @@ class ChatMessage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isUser 
                     ? const Color(0xFF3A3A3A) 
-                    : const Color(0xFF2D2D2D),
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: content is Widget 
