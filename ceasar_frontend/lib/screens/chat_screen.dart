@@ -1,3 +1,4 @@
+import 'dart:math'; // Needed for cos() and sin()
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
@@ -8,7 +9,6 @@ import '../utils/extensions/scroll_controller_ext.dart';
 import '../components/horizontal_orbit_loader.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'dart:ui';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -25,6 +25,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   late AnimationController _titleAnimationController;
   late Animation<Alignment> _titleAlignment;
+  late AnimationController _gradientController; // New controller for gradient animation
   final FocusNode _textFocusNode = FocusNode();
   bool _isTyping = false;
   bool _showBlur = false;
@@ -61,6 +62,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       ),
     );
 
+    // Initialize the gradient animation controller
+    _gradientController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat();
+
     _textFocusNode.addListener(() {
       if (_textFocusNode.hasFocus) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,6 +94,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _typingController.dispose();
     _scrollController.dispose();
     _titleAnimationController.dispose();
+    _gradientController.dispose(); // Dispose gradient controller
     _textFocusNode.dispose();
     _chatService.cancelRequest();
     super.dispose();
@@ -259,18 +267,28 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ],
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              _darkBlue,
-              _darkestColor,
-            ],
-            stops: const [0.0, 1.0],
-          ),
-        ),
+      // Wrap the body with an AnimatedBuilder to rebuild the gradient background
+      body: AnimatedBuilder(
+        animation: _gradientController,
+        builder: (context, child) {
+          // Calculate an angle based on the controller's value
+          final angle = _gradientController.value * 2 * pi;
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                // Use cosine and sine to create a subtle moving effect
+                begin: Alignment(cos(angle), sin(angle)),
+                end: Alignment(-cos(angle), -sin(angle)),
+                colors: [
+                  _darkBlue,
+                  _darkestColor,
+                ],
+              ),
+            ),
+            child: child,
+          );
+        },
+        // The child is the main content of the screen
         child: Column(
           children: [
             Expanded(
